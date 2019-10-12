@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { axiosWithAuth } from './AxiosWithAuth';
 
 const initialColor = {
   color: "",
@@ -21,10 +22,52 @@ const ColorList = ({ colors, updateColors }) => {
     // Make a put request to save your updated color
     // think about where will you get the id from...
     // where is is saved right now?
+    let color = colorToEdit.color;
+    let code = colorToEdit.code;
+    let id = colorToEdit.id;
+    let headers = localStorage.getItem("authKey")
+
+    let api = axios.create({
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `${headers}`,
+      },
+    });
+
+    api.put(`http://localhost:5000/api/colors/${id}`,{color,code,id})
+      .then((res) => {
+        console.log(res);
+        api.get(`http://localhost:5000/api/colors/`)
+        .then((res) => {
+          updateColors((res.data))
+        })
+        .catch()
+      })
+      .catch((err) => {
+        console.log(err);
+      })
   };
 
   const deleteColor = color => {
-    // make a delete request to delete this color
+    let headers = localStorage.getItem("authKey")
+
+    let id = color.id;
+    let api = axios.create({
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `${headers}`,
+      },
+    });
+
+    api.delete(`http://localhost:5000/api/colors/${id}`)
+    .then(() => {
+      api.get(`http://localhost:5000/api/colors/`)
+        .then((res) => {
+          updateColors((res.data))
+        })
+        .catch()
+    })
+    .catch()
   };
 
   return (
